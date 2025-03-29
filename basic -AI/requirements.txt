@@ -1,0 +1,6 @@
+flask
+transformers
+torch
+speechrecognition
+pyttsx3
+googlesearch-python

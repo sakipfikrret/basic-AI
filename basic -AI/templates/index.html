@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bilginay - Son Sürüm</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .chat-container { border: 1px solid #ccc; padding: 20px; height: 500px; overflow-y: scroll; }
+        .user { color: blue; margin: 10px 0; }
+        .bot { color: green; font-weight: bold; margin: 10px 0; }
+        .kufur-mod { color: red; }
+        input { width: 70%; padding: 10px; }
+        button { padding: 10px; margin-left: 5px; }
+        .ses-butonu { background: #007BFF; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Bilginay - Son Sürüm 🤖💥</h1>
+    <div class="chat-container" id="chatbox"></div>
+    <input type="text" id="mesaj" placeholder="Mesajınızı yazın veya 'küfürlü mod aç'...">
+    <button onclick="gonder()">Gönder</button>
+    <button class="ses-butonu" onclick="sesle()">🎤 Sesle</button>
+
+    <script>
+        function sesle() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'tr-TR';
+            recognition.onresult = (event) => {
+                document.getElementById("mesaj").value = event.results[0][0].transcript;
+            };
+            recognition.start();
+        }
+
+        function seslendir(metin) {
+            const utterance = new SpeechSynthesisUtterance(metin);
+            utterance.lang = 'tr-TR';
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function gonder() {
+            const mesaj = document.getElementById("mesaj").value;
+            const chatbox = document.getElementById("chatbox");
+            
+            if (!mesaj.trim()) {
+                alert("Lütfen boş mesaj göndermeyin!");
+                return;
+            }
+
+            fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ mesaj: mesaj })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Sunucu hatası!");
+                return response.json();
+            })
+            .then(data => {
+                chatbox.innerHTML += `<div class="bot ${data.yanit.includes('🔥') ? 'kufur-mod' : ''}">Bilginay: ${data.yanit}</div>`;
+                seslendir(data.yanit);
+                chatbox.scrollTop = chatbox.scrollHeight;
+                document.getElementById("mesaj").value = "";
+            })
+            .catch(error => {
+                console.error("Hata:", error);
+                alert("Bir hata oluştu: " + error.message);
+            });
+        }
+    </script>
+</body>
+</html>
